@@ -8,18 +8,20 @@ public class TruckController : MonoBehaviour {
     [SerializeField] private float maxMotor;
     [SerializeField] private float maxBrake;
     [SerializeField] private float maxSteerAngle;
+    [SerializeField] private float minSteerAngle;
     [SerializeField] private float maxHandbrake;
     [SerializeField] private float maxDownForce;
     //set of 2 wheels, both colliders and meshes
     [SerializeField] private List<WheelSet> wheelSets;
 
     private Rigidbody rb;
+    private float steerAngle;
 
     public void Start()
     {
-        //lower center of mass 
+        //lower center of mass so truck doesn't tip as easily
         rb = GetComponent<Rigidbody>();
-        rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -1f, 0.0f);
+        rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -0.5f, 0.0f);
     }
 
 
@@ -30,16 +32,18 @@ public class TruckController : MonoBehaviour {
         float steering = Mathf.Clamp(horizontal, -1, 1);
         float handbrake = Mathf.Clamp(jump, 0, 1);
 
-
         //as velocity increases: decrease brake forces and decrease maxSteerAngle and add down force
         Adjust();
+
+
+        Debug.DrawRay(rb.transform.position, rb.velocity*3, Color.red, 1f, false);
 
         foreach (WheelSet wheelSet in wheelSets)
         {
 
             if (wheelSet.steerWheel)
             {
-                float steerAngle = steering * maxSteerAngle;
+                steerAngle = steering * steerAngle;
                 wheelSet.rightWheelCollider.steerAngle = steerAngle;
                 wheelSet.leftWheelCollider.steerAngle = steerAngle;
             }
@@ -78,7 +82,17 @@ public class TruckController : MonoBehaviour {
     public void Adjust()
     {
         float magnitude = wheelSets[0].rightWheelCollider.attachedRigidbody.velocity.magnitude;
+        //adds a downforce to truck to help it self right and stay down at high speed
         wheelSets[0].rightWheelCollider.attachedRigidbody.AddForce(-Vector3.up * maxDownForce * magnitude);
+        //reduce steerAngle as magnitude increases
+        if (maxSteerAngle - magnitude > minSteerAngle)
+        {
+            steerAngle = maxSteerAngle - magnitude;
+        }
+        else
+        {
+            steerAngle = minSteerAngle;
+        }
     }
 
     //alligns the Wheel meshes with the position and rotation of the wheel colliders

@@ -10,9 +10,18 @@ public class TruckController : MonoBehaviour {
     [SerializeField] private float maxSteerAngle;
     [SerializeField] private float maxHandbrake;
     [SerializeField] private float maxDownForce;
-
     //set of 2 wheels, both colliders and meshes
     [SerializeField] private List<WheelSet> wheelSets;
+
+    private Rigidbody rb;
+
+    public void Start()
+    {
+        //lower center of mass 
+        rb = GetComponent<Rigidbody>();
+        rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -1f, 0.0f);
+    }
+
 
     public void Move(float horizontal, float vertical, float jump)
     {
@@ -63,7 +72,7 @@ public class TruckController : MonoBehaviour {
 
             }
             // FIX rotates on wrong axis
-            //setWheelMeshes(wheelSet);
+            //SetWheelMeshes(wheelSet);
         }
     }
 
@@ -74,7 +83,7 @@ public class TruckController : MonoBehaviour {
     }
 
     //alligns the Wheel meshes with the position and rotation of the wheel colliders
-    public void setWheelMeshes(WheelSet wheelSet)
+    public void SetWheelMeshes(WheelSet wheelSet)
     {
         Quaternion rotation;
         Vector3 position;

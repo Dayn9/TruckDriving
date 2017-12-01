@@ -45,13 +45,12 @@ public class TruckController : MonoBehaviour {
             }
             if (wheelSet.driveWheel)
             {
-                // FIX should divide by number of driveWheels
-                float thrustTorque = acceleration * (maxMotor / (wheelSets.Count * 2));
+                float thrustTorque = acceleration * (maxMotor / NumDriveWheels());
                 wheelSet.rightWheelCollider.motorTorque = thrustTorque;
                 wheelSet.leftWheelCollider.motorTorque = thrustTorque;
                 if (brake < 0)
                 {
-                    float brakeTorque = brake * (maxBrake / (wheelSets.Count * 2));
+                    float brakeTorque = brake * (maxBrake / NumDriveWheels());
                     wheelSet.rightWheelCollider.motorTorque = brakeTorque;
                     wheelSet.leftWheelCollider.motorTorque = brakeTorque;
                 }
@@ -95,4 +94,17 @@ public class TruckController : MonoBehaviour {
         wheelSet.leftWheel.transform.rotation = rotation;
     }
 
+    //returns the number of drive wheels
+    public int NumDriveWheels()
+    {
+        int wheels = 0;
+        foreach(WheelSet wheelSet in wheelSets)
+        {
+            if (wheelSet.driveWheel)
+            {
+                wheels += 2;
+            }
+        }
+        return wheels;
+    }
 }

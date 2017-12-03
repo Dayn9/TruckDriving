@@ -11,6 +11,7 @@ public class TruckController : MonoBehaviour {
     [SerializeField] private float minSteerAngle;
     [SerializeField] private float maxHandbrake;
     [SerializeField] private float maxDownForce;
+    [SerializeField] private float maxSpeed;
     //set of 2 wheels, both colliders and meshes
     [SerializeField] private List<WheelSet> wheelSets;
 
@@ -21,7 +22,8 @@ public class TruckController : MonoBehaviour {
     {
         //lower center of mass so truck doesn't tip as easily
         rb = GetComponent<Rigidbody>();
-        rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -0.5f, 0.0f);
+        rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -1f, 0.0f);
+
     }
 
 
@@ -30,13 +32,12 @@ public class TruckController : MonoBehaviour {
         float acceleration = Mathf.Clamp(vertical, 0, 1);
         float brake = Mathf.Clamp(vertical, -1, 0);
         float steering = Mathf.Clamp(horizontal, -1, 1);
+        if(!(steering == -1 || steering == 1)){ steering = 0; }
+        Debug.Log(steering);
         float handbrake = Mathf.Clamp(jump, 0, 1);
 
         //as velocity increases: decrease brake forces and decrease maxSteerAngle and add down force
         Adjust();
-
-
-        Debug.DrawRay(rb.transform.position, rb.velocity*3, Color.red, 1f, false);
 
         foreach (WheelSet wheelSet in wheelSets)
         {
@@ -121,4 +122,5 @@ public class TruckController : MonoBehaviour {
         }
         return wheels;
     }
+
 }

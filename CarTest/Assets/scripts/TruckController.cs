@@ -29,11 +29,10 @@ public class TruckController : MonoBehaviour {
 
     public void Move(float horizontal, float vertical, float jump)
     {
+        //clamp range on input values
         float acceleration = Mathf.Clamp(vertical, 0, 1);
         float brake = Mathf.Clamp(vertical, -1, 0);
         float steering = Mathf.Clamp(horizontal, -1, 1);
-        if(!(steering == -1 || steering == 1)){ steering = 0; }
-        Debug.Log(steering);
         float handbrake = Mathf.Clamp(jump, 0, 1);
 
         //as velocity increases: decrease brake forces and decrease maxSteerAngle and add down force
@@ -79,6 +78,18 @@ public class TruckController : MonoBehaviour {
             //SetWheelMeshes(wheelSet);
         }
     }
+
+    public void Stabilize(WheelSet wheelSet) {
+        WheelHit hit;
+        float travelRight = 1.0f;
+        float travelLeft = 1.0f;
+        bool groundedRight = wheelSet.rightWheelCollider.GetGroundHit(out hit);
+        if (groundedRight)
+        {
+            travelRight = (-wheelSet.rightWheelCollider.transform.InverseTransformDirection(hit.point).y - wheelSet.rightWheelCollider.radius) / wheelSet.rightWheelCollider.suspensionDistance;
+        }
+    }
+
 
     public void Adjust()
     {

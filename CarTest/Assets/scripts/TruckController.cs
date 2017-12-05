@@ -25,7 +25,7 @@ public class TruckController : MonoBehaviour {
     }
 
 
-    public void Move(float horizontal, float vertical, float jump)
+    public void Move(float horizontal, float vertical, float jump, bool nitro)
     {
         //clamp range on input values
         float acceleration = Mathf.Clamp(vertical, 0, 1);
@@ -56,6 +56,11 @@ public class TruckController : MonoBehaviour {
                     wheelSet.rightWheelCollider.motorTorque = brakeTorque;
                     wheelSet.leftWheelCollider.motorTorque = brakeTorque;
                 }
+            }
+            if (nitro)
+            {
+                wheelSet.rightWheelCollider.motorTorque = maxMotor;
+                wheelSet.leftWheelCollider.motorTorque = maxMotor;
             }
 
             if (handbrake > 0)

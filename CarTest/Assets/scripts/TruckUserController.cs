@@ -17,7 +17,8 @@ public class TruckUserController : MonoBehaviour {
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
         float jump = Input.GetAxis("Jump");
+        bool nitro = Input.GetKey(KeyCode.X);
 
-        truck.Move(horizontal, vertical, jump);
+        truck.Move(horizontal, vertical, jump, nitro);
 	}
 }

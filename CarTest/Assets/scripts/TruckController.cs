@@ -8,16 +8,13 @@ public class TruckController : MonoBehaviour {
     [SerializeField] private float maxMotor;
     [SerializeField] private float maxBrake;
     [SerializeField] private float maxSteerAngle;
-    [SerializeField] private float minSteerAngle;
     [SerializeField] private float maxHandbrake;
     [SerializeField] private float maxDownForce;
-    [SerializeField] private float maxSpeed;
     [SerializeField] private float antiRoll;
     //set of 2 wheels, both colliders and meshes
     [SerializeField] private List<WheelSet> wheelSets;
 
     private Rigidbody rb;
-    private float steerAngle;
 
     public void Start()
     {
@@ -44,9 +41,9 @@ public class TruckController : MonoBehaviour {
 
             if (wheelSet.steerWheel)
             {
-                steerAngle = steering * steerAngle;
-                wheelSet.rightWheelCollider.steerAngle = steerAngle;
-                wheelSet.leftWheelCollider.steerAngle = steerAngle;
+                steering = steering * maxSteerAngle;
+                wheelSet.rightWheelCollider.steerAngle = steering;
+                wheelSet.leftWheelCollider.steerAngle = steering;
             }
             if (wheelSet.driveWheel)
             {
@@ -77,7 +74,7 @@ public class TruckController : MonoBehaviour {
 
             Stabilize(wheelSet);
             // FIX rotates on wrong axis
-            //SetWheelMeshes(wheelSet);
+            SetWheelMeshes(wheelSet);
         }
     }
 
@@ -112,15 +109,6 @@ public class TruckController : MonoBehaviour {
         float magnitude = wheelSets[0].rightWheelCollider.attachedRigidbody.velocity.magnitude;
         //adds a downforce to truck to help it self right and stay down at high speed
         wheelSets[0].rightWheelCollider.attachedRigidbody.AddForce(-Vector3.up * maxDownForce * magnitude);
-        //reduce steerAngle as magnitude increases
-        if (maxSteerAngle - magnitude > minSteerAngle)
-        {
-            steerAngle = maxSteerAngle - magnitude;
-        }
-        else
-        {
-            steerAngle = minSteerAngle;
-        }
     }
 
     //alligns the Wheel meshes with the position and rotation of the wheel colliders

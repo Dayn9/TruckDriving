@@ -4,17 +4,44 @@ using UnityEngine;
 
 public class TrailerController : MonoBehaviour
 {
-
+    [SerializeField] private float antiRoll;
     [SerializeField] private List<WheelSet> wheelSets;
 
     void FixedUpdate()
     {
         foreach (WheelSet wheelSet in wheelSets)
         {
+            Stabilize(wheelSet);
             SetWheelMeshes(wheelSet);
         }
     }
 
+    //borrows Stabalize and Set Wheel Position from truck controller
+    public void Stabilize(WheelSet wheelSet)
+    {
+        WheelHit hit;
+        float travelRight = 1.0f;
+        float travelLeft = 1.0f;
+        bool groundedRight = wheelSet.rightWheelCollider.GetGroundHit(out hit);
+        if (groundedRight)
+        {
+            travelRight = (-wheelSet.rightWheelCollider.transform.InverseTransformDirection(hit.point).y - wheelSet.rightWheelCollider.radius) / wheelSet.rightWheelCollider.suspensionDistance;
+        }
+        bool groundedLeft = wheelSet.leftWheelCollider.GetGroundHit(out hit);
+        if (groundedLeft)
+        {
+            travelLeft = (-wheelSet.leftWheelCollider.transform.InverseTransformDirection(hit.point).y - wheelSet.leftWheelCollider.radius) / wheelSet.leftWheelCollider.suspensionDistance;
+        }
+        float antiRollForce = (travelLeft - travelRight) * antiRoll;
+        if (groundedRight)
+        {
+            wheelSet.rightWheelCollider.attachedRigidbody.AddForceAtPosition(wheelSet.rightWheelCollider.transform.up * (antiRollForce * -1), wheelSet.rightWheelCollider.transform.position);
+        }
+        if (groundedLeft)
+        {
+            wheelSet.leftWheelCollider.attachedRigidbody.AddForceAtPosition(wheelSet.leftWheelCollider.transform.up * (antiRollForce * -1), wheelSet.leftWheelCollider.transform.position);
+        }
+    }
     public void SetWheelMeshes(WheelSet wheelSet)
     {
         Quaternion rotation;

@@ -83,13 +83,17 @@ public class TruckController : MonoBehaviour {
         }
     }
 
+    //transfer some compression force from one spring to the opposite on same axle
     public void Stabilize(WheelSet wheelSet) {
         WheelHit hit;
+        //travel values between 0.0 (fully compressed) and 1.0 (fully extended)
+        //if not on the ground must be fully extended
         float travelRight = 1.0f;
         float travelLeft = 1.0f;
         bool groundedRight = wheelSet.rightWheelCollider.GetGroundHit(out hit);
         if (groundedRight)
         {
+            //find the y coordinate of the hit point in world space 
             travelRight = (-wheelSet.rightWheelCollider.transform.InverseTransformDirection(hit.point).y - wheelSet.rightWheelCollider.radius) / wheelSet.rightWheelCollider.suspensionDistance;
         }
         bool groundedLeft = wheelSet.leftWheelCollider.GetGroundHit(out hit);
@@ -97,7 +101,9 @@ public class TruckController : MonoBehaviour {
         {
             travelLeft = (-wheelSet.leftWheelCollider.transform.InverseTransformDirection(hit.point).y - wheelSet.leftWheelCollider.radius) / wheelSet.leftWheelCollider.suspensionDistance;
         }
+        //antiRollForce to be transfered depends on difference in suspension 
         float antiRollForce = (travelLeft - travelRight) * antiRoll;
+        //subtract the force from one spring and add it to the other
         if (groundedRight)
         {
             wheelSet.rightWheelCollider.attachedRigidbody.AddForceAtPosition(wheelSet.rightWheelCollider.transform.up * (antiRollForce * -1), wheelSet.rightWheelCollider.transform.position);

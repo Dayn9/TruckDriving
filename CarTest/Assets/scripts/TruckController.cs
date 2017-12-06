@@ -28,10 +28,10 @@ public class TruckController : MonoBehaviour {
     public void Move(float horizontal, float vertical, float jump, bool nitro)
     {
         //clamp range on input values
-        float acceleration = Mathf.Clamp(vertical, 0, 1);
-        float brake = Mathf.Clamp(vertical, -1, 0);
-        float steering = Mathf.Clamp(horizontal, -1, 1);
-        float handbrake = Mathf.Clamp(jump, 0, 1);
+        float acceleration = Mathf.Clamp(vertical, 0, 1f);
+        float brake = Mathf.Clamp(vertical, -1f, 0);
+        float steering = Mathf.Clamp(horizontal, -0.7f, 0.7f);
+        float handbrake = Mathf.Clamp(jump, 0, 1f);
 
         //as velocity increases: decrease brake forces and decrease maxSteerAngle and add down force
         Adjust();

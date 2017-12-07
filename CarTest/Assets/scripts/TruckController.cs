@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class TruckController : MonoBehaviour {
 
+    [SerializeField] private GameObject trailerPrefab;
     //modifiers for forces
     [SerializeField] private float maxMotor;
     [SerializeField] private float maxBrake;
@@ -15,13 +16,39 @@ public class TruckController : MonoBehaviour {
     [SerializeField] private List<WheelSet> wheelSets;
 
     private Rigidbody rb;
+    private List<GameObject> trailers;
 
     public void Start()
     {
         //lower center of mass so truck doesn't tip as easily
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -1f, 0.0f);
+        
+    }
 
+    //Triggers
+    void OnTriggerEnter(Collider coll)
+    {
+        //Add trailers to back of truck
+        if (coll.tag == "TrailerPickup")
+        {
+            coll.gameObject.SetActive(false);
+            GameObject newTrailer;
+            //first trailer gets added to back of truck head
+            if(trailers.Count == 0) // NULL REFERENCE EXCEPTION ------------------------------------------------------------------------------------ <<< 
+            {
+                newTrailer = Instantiate(trailerPrefab, transform.position, transform.rotation);
+            }
+            //all others added behind the last added trailer
+            else
+            {
+                newTrailer = Instantiate(trailerPrefab, trailers[trailers.Count-1].transform.position + new Vector3(0.0f,0.0f,-5.5f), trailers[trailers.Count - 1].transform.rotation);
+            }
+            //connect the newTrailer and match velocity
+            newTrailer.GetComponent<HingeJoint>().connectedBody = rb;
+            newTrailer.GetComponent<Rigidbody>().velocity = rb.velocity;
+            trailers.Add(newTrailer);
+        }
     }
 
 

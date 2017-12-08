@@ -10,8 +10,9 @@ public class CameraStable : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         truckY = truck.transform.eulerAngles.y;
-
         //lock camera rotation
         transform.eulerAngles = new Vector3(0.0f,truckY,0.0f);
+
+
     }
 }

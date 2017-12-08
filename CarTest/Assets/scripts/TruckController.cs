@@ -23,7 +23,7 @@ public class TruckController : MonoBehaviour {
         //lower center of mass so truck doesn't tip as easily
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -1f, 0.0f);
-        
+        trailers = new List<GameObject>();
     }
 
     //Triggers
@@ -35,18 +35,20 @@ public class TruckController : MonoBehaviour {
             coll.gameObject.SetActive(false);
             GameObject newTrailer;
             //first trailer gets added to back of truck head
-            if(trailers.Count == 0) // NULL REFERENCE EXCEPTION ------------------------------------------------------------------------------------ <<< 
+            if(trailers.Count == 0) 
             {
                 newTrailer = Instantiate(trailerPrefab, transform.position, transform.rotation);
+                //connect the newTrailer and match velocity
+                newTrailer.GetComponent<HingeJoint>().connectedBody = rb;
+                newTrailer.GetComponent<Rigidbody>().velocity = rb.velocity;
             }
             //all others added behind the last added trailer
             else
             {
-                newTrailer = Instantiate(trailerPrefab, trailers[trailers.Count-1].transform.position + new Vector3(0.0f,0.0f,-5.5f), trailers[trailers.Count - 1].transform.rotation);
+                newTrailer = Instantiate(trailerPrefab, trailers[trailers.Count-1].transform.position + (trailers[trailers.Count - 1].transform.forward * -5.5f), trailers[trailers.Count - 1].transform.rotation);
+                newTrailer.GetComponent<HingeJoint>().connectedBody = trailers[trailers.Count - 1].GetComponent<Rigidbody>();
+                newTrailer.GetComponent<Rigidbody>().velocity = trailers[trailers.Count - 1].GetComponent<Rigidbody>().velocity;
             }
-            //connect the newTrailer and match velocity
-            newTrailer.GetComponent<HingeJoint>().connectedBody = rb;
-            newTrailer.GetComponent<Rigidbody>().velocity = rb.velocity;
             trailers.Add(newTrailer);
         }
     }
@@ -75,6 +77,10 @@ public class TruckController : MonoBehaviour {
             if (wheelSet.driveWheel)
             {
                 float thrustTorque = acceleration * (maxMotor / NumDriveWheels());
+                if (rb.velocity.magnitude < 0.1)
+                {
+                    thrustTorque = maxMotor / NumDriveWheels();
+                }
                 wheelSet.rightWheelCollider.motorTorque = thrustTorque;
                 wheelSet.leftWheelCollider.motorTorque = thrustTorque;
                 if (brake < 0)

@@ -92,8 +92,17 @@ public class TruckController : MonoBehaviour {
             }
             if (nitro)
             {
-                wheelSet.rightWheelCollider.motorTorque = maxNitro;
-                wheelSet.leftWheelCollider.motorTorque = maxNitro;
+                if (brake < 0)
+                {
+                    wheelSet.rightWheelCollider.motorTorque = -maxNitro;
+                    wheelSet.leftWheelCollider.motorTorque = -maxNitro;
+                }
+                else
+                {
+                    wheelSet.rightWheelCollider.motorTorque = maxNitro;
+                    wheelSet.leftWheelCollider.motorTorque = maxNitro;
+                }
+
             }
 
             if (handbrake)

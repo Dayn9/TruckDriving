@@ -11,6 +11,7 @@ public class TruckController : MonoBehaviour {
     [SerializeField] private float maxSteerAngle;
     [SerializeField] private float maxHandbrake;
     [SerializeField] private float maxDownForce;
+    [SerializeField] private float maxNitro;
     [SerializeField] private float antiRoll;
     //set of 2 wheels, both colliders and meshes
     [SerializeField] private List<WheelSet> wheelSets;
@@ -54,13 +55,12 @@ public class TruckController : MonoBehaviour {
     }
 
 
-    public void Move(float horizontal, float vertical, float jump, bool nitro)
+    public void Move(float horizontal, float acc, float brk, bool handbrake, bool nitro)
     {
         //clamp range on input values
-        float acceleration = Mathf.Clamp(vertical, 0, 1f);
-        float brake = Mathf.Clamp(vertical, -1f, 0);
+        float acceleration = Mathf.Clamp(acc, 0, 1f);
+        float brake = Mathf.Clamp(brk, -1f, 0);
         float steering = Mathf.Clamp(horizontal, -0.7f, 0.7f);
-        float handbrake = Mathf.Clamp(jump, 0, 1f);
 
         //as velocity increases: decrease brake forces and decrease maxSteerAngle and add down force
         Adjust();
@@ -92,13 +92,13 @@ public class TruckController : MonoBehaviour {
             }
             if (nitro)
             {
-                wheelSet.rightWheelCollider.motorTorque = maxMotor;
-                wheelSet.leftWheelCollider.motorTorque = maxMotor;
+                wheelSet.rightWheelCollider.motorTorque = maxNitro;
+                wheelSet.leftWheelCollider.motorTorque = maxNitro;
             }
 
-            if (handbrake > 0)
+            if (handbrake)
             {
-                float handbrakeTorque = handbrake * maxHandbrake;
+                float handbrakeTorque = maxHandbrake;
                 wheelSet.rightWheelCollider.brakeTorque = handbrakeTorque;
                 wheelSet.leftWheelCollider.brakeTorque = handbrakeTorque;
                 wheelSet.rightWheelCollider.motorTorque = 0;

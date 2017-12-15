@@ -17,16 +17,23 @@ public class CameraStable : MonoBehaviour {
     void Update () {
 
         truckY = truck.transform.eulerAngles.y;
+
+        //pan camera left and right
         if(Mathf.Abs(Input.GetAxis("Mouse X")) > 0.1f) { scrollY += Input.GetAxis("Mouse X") * 3; }
+        //if not panning, return to origional position
         else { scrollY = scrollY / 1.2f; }
+        //remove asymptote as scrollY approaches 0
         if (Mathf.Abs(scrollY) < 0.05) { scrollY = 0; }
+        //swiches camera to right or left side when it passes in front of camera
         if (Mathf.Abs(scrollY) > 180) { scrollY -= 360 * Mathf.Sign(scrollY); }
+
+        //pan camera up and down
         if (Mathf.Abs(Input.GetAxis("Mouse Y")) > 0.1f) { scrollX += Input.GetAxis("Mouse Y") *1.5f; }
 
         //Debug.Log(cam.transform.localPosition);
         //Debug.Log(cam.transform.localRotation); 
 
-        //camera views 
+        //camera views locations and rotations 
         if (Input.GetButtonDown("LeftButton"))
         {
             switch (location) {

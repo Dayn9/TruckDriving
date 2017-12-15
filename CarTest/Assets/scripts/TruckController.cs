@@ -54,6 +54,13 @@ public class TruckController : MonoBehaviour {
         }
     }
 
+    //removes last trailer from back and sends it to dropOff
+    public GameObject removeTrailer()
+    {
+        trailers.RemoveAt(trailers.Count-1);
+        return trailers[trailers.Count - 1];
+    }
+
 
     public void Move(float horizontal, float acc, float brk, bool handbrake, bool nitro)
     {

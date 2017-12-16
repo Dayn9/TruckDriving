@@ -11,7 +11,7 @@ public class CameraStable : MonoBehaviour {
     private float truckY;
     private float scrollY;
     private float scrollX;
-    private CameraLocation location = CameraLocation.TopView;
+    private CameraLocation location = CameraLocation.DriverView;
 
     // Update is called once per frame
     void Update () {

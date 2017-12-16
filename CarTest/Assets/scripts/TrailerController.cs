@@ -6,9 +6,11 @@ public class TrailerController : MonoBehaviour
 {
     [SerializeField] private float antiRoll;
     [SerializeField] private List<WheelSet> wheelSets;
+    [SerializeField] private float maxDownForce;
 
     void FixedUpdate()
     {
+        Adjust();
         foreach (WheelSet wheelSet in wheelSets)
         {
             Stabilize(wheelSet);
@@ -42,6 +44,14 @@ public class TrailerController : MonoBehaviour
             wheelSet.leftWheelCollider.attachedRigidbody.AddForceAtPosition(wheelSet.leftWheelCollider.transform.up * (antiRollForce * -1), wheelSet.leftWheelCollider.transform.position);
         }
     }
+
+    public void Adjust()
+    {
+        float magnitude = wheelSets[0].rightWheelCollider.attachedRigidbody.velocity.magnitude;
+        //adds a downforce to truck to help it self right and stay down at high speed
+        wheelSets[0].rightWheelCollider.attachedRigidbody.AddForce(-transform.up * maxDownForce * magnitude);
+    }
+
     public void SetWheelMeshes(WheelSet wheelSet)
     {
         Quaternion rotation;

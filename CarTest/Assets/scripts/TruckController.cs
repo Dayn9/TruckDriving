@@ -9,7 +9,6 @@ public class TruckController : MonoBehaviour {
     [SerializeField] private float maxMotor;
     [SerializeField] private float maxBrake;
     [SerializeField] private float maxSteerAngle;
-    [SerializeField] private float maxHandbrake;
     [SerializeField] private float maxDownForce;
     [SerializeField] private float maxNitro;
     [SerializeField] private float antiRoll;
@@ -99,24 +98,10 @@ public class TruckController : MonoBehaviour {
             }
             if (nitro)
             {
-                if (brake < 0)
-                {
-                    wheelSet.rightWheelCollider.motorTorque = -maxNitro;
-                    wheelSet.leftWheelCollider.motorTorque = -maxNitro;
-                }
-                else
-                {
-                    wheelSet.rightWheelCollider.motorTorque = maxNitro;
-                    wheelSet.leftWheelCollider.motorTorque = maxNitro;
-                }
-
+                rb.AddForce(transform.forward * maxNitro, ForceMode.Impulse);
             }
-
             if (handbrake)
             {
-                float handbrakeTorque = maxHandbrake;
-                wheelSet.rightWheelCollider.brakeTorque = handbrakeTorque;
-                wheelSet.leftWheelCollider.brakeTorque = handbrakeTorque;
                 wheelSet.rightWheelCollider.motorTorque = 0;
                 wheelSet.leftWheelCollider.motorTorque = 0;
             }
@@ -145,10 +130,18 @@ public class TruckController : MonoBehaviour {
             //find the y coordinate of the hit point in world space 
             travelRight = (-wheelSet.rightWheelCollider.transform.InverseTransformDirection(hit.point).y - wheelSet.rightWheelCollider.radius) / wheelSet.rightWheelCollider.suspensionDistance;
         }
+        else
+        {
+            wheelSet.rightWheelCollider.motorTorque = 0;
+        }
         bool groundedLeft = wheelSet.leftWheelCollider.GetGroundHit(out hit);
         if (groundedLeft)
         {
             travelLeft = (-wheelSet.leftWheelCollider.transform.InverseTransformDirection(hit.point).y - wheelSet.leftWheelCollider.radius) / wheelSet.leftWheelCollider.suspensionDistance;
+        }
+        else
+        {
+            wheelSet.leftWheelCollider.motorTorque = 0;
         }
         //antiRollForce to be transfered depends on difference in suspension 
         float antiRollForce = (travelLeft - travelRight) * antiRoll;
@@ -162,13 +155,11 @@ public class TruckController : MonoBehaviour {
             wheelSet.leftWheelCollider.attachedRigidbody.AddForceAtPosition(wheelSet.leftWheelCollider.transform.up * (antiRollForce * -1), wheelSet.leftWheelCollider.transform.position);
         }
     }
-
-
     public void Adjust()
     {
         float magnitude = wheelSets[0].rightWheelCollider.attachedRigidbody.velocity.magnitude;
         //adds a downforce to truck to help it self right and stay down at high speed
-        wheelSets[0].rightWheelCollider.attachedRigidbody.AddForce(-Vector3.up * maxDownForce * magnitude);
+        wheelSets[0].rightWheelCollider.attachedRigidbody.AddForce(-transform.up * maxDownForce * magnitude);
     }
 
     //alligns the Wheel meshes with the position and rotation of the wheel colliders

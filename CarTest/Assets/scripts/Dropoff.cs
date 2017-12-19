@@ -10,7 +10,7 @@ public class Dropoff : MonoBehaviour {
         {
             Debug.Log("entered");
             //ERROR -------------------------------------------------------------------------------------------------------------<<<
-            GameObject trailer = coll.transform.root.gameObject.GetComponent<TruckController>().removeTrailer();
+            GameObject trailer = coll.transform.root.gameObject.GetComponent<TruckController>().RemoveTrailer();
 
         }
     }

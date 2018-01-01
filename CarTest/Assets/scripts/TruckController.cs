@@ -12,22 +12,29 @@ public class TruckController : MonoBehaviour {
     [SerializeField] private float maxDownForce;
     [SerializeField] private float maxNitro;
     [SerializeField] private float antiRoll;
-    [SerializeField] private GameObject boxColliders;
     //set of 2 wheels, both colliders and meshes
     [SerializeField] private List<WheelSet> wheelSets;
 
     private Rigidbody rb;
     private List<GameObject> trailers;
+    private float currentSteerAngle;
+
+    //for locking the speed
+    private float currentMagnitude;
+    private float setMagnitude = 0.0f;
+    private float setTorque;
 
     public void Start()
     {
         //lower center of mass so truck doesn't tip as easily
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -1.0f, 0.0f);
-        trailers = new List<GameObject>();
+        currentSteerAngle = maxSteerAngle;
+        currentMagnitude = 0.0f;
     }
 
     //Triggers
+    /*
     void OnTriggerEnter(Collider coll)
     {
         //Add trailers to back of truck
@@ -52,15 +59,14 @@ public class TruckController : MonoBehaviour {
             }
             trailers.Add(newTrailer);
         }
-    }
-
+    } 
     //removes last trailer from back and sends it to dropOff
     public GameObject RemoveTrailer()
     {
         trailers.RemoveAt(trailers.Count-1);
         return trailers[trailers.Count - 1];
     }
-
+    */
 
     public void Move(float horizontal, float acc, float brk, bool handbrake, bool nitro)
     {
@@ -69,20 +75,26 @@ public class TruckController : MonoBehaviour {
         float brake = Mathf.Clamp(brk, -1f, 0);
         float steering = Mathf.Clamp(horizontal, -0.7f, 0.7f);
 
-        //as velocity increases: decrease brake forces and decrease maxSteerAngle and add down force
-        Adjust();
-        AllignBoxColliders();
+        currentMagnitude = Adjust();
 
         foreach (WheelSet wheelSet in wheelSets)
         {
+            //sets the angle of any steerWheels
             if (wheelSet.steerWheel)
             {
-                steering = steering * maxSteerAngle;
+                steering = steering * currentSteerAngle;
                 wheelSet.rightWheelCollider.steerAngle = steering;
                 wheelSet.leftWheelCollider.steerAngle = steering;
+                //nitro locks the wheels forward
+                if (nitro) {
+                    wheelSet.rightWheelCollider.steerAngle = 0;
+                    wheelSet.leftWheelCollider.steerAngle = 0;
+                }
             }
+            //applys torques to any driveWheels
             if (wheelSet.driveWheel)
             {
+                //apply force evenly across all driveWheels
                 float thrustTorque = acceleration * (maxMotor / NumDriveWheels());
                 if (rb.velocity.magnitude < 0.1)
                 {
@@ -90,29 +102,42 @@ public class TruckController : MonoBehaviour {
                 }
                 wheelSet.rightWheelCollider.motorTorque = thrustTorque;
                 wheelSet.leftWheelCollider.motorTorque = thrustTorque;
+                //override forward torque with brake torques 
                 if (brake < 0)
                 {
                     float brakeTorque = brake * (maxBrake / NumDriveWheels());
                     wheelSet.rightWheelCollider.motorTorque = brakeTorque;
                     wheelSet.leftWheelCollider.motorTorque = brakeTorque;
                 }
+                //nitro maintains the speed traveling when first engaged -------------------------------------------<< NOT QUITE RIGHT
+                /*if (nitro)
+                {
+                    if (setMagnitude == 0.0f)
+                    {
+                        setMagnitude = currentMagnitude;
+                        setTorque = thrustTorque/2;
+                    }
+                    //adjust setTorque to maintain origional speed
+                    Debug.Log(setMagnitude + " "+ currentMagnitude);
+                    if (currentMagnitude > setMagnitude)
+                    {
+                        setTorque -= 10.0f;
+                    }
+                    else if (currentMagnitude < setMagnitude)
+                    {
+                        setTorque += 10.0f;
+                    }
+                    wheelSet.rightWheelCollider.motorTorque = setTorque;
+                    wheelSet.leftWheelCollider.motorTorque = setTorque;
+                }*/
             }
-            if (nitro)
-            {
-                rb.AddForce(transform.forward * maxNitro, ForceMode.Impulse);
-                wheelSet.rightWheelCollider.steerAngle = 0;
-                wheelSet.leftWheelCollider.steerAngle = 0;
-
-            }
+            //apply brake forces when handbrake engaged
+            wheelSet.rightWheelCollider.brakeTorque = 0.0f;
+            wheelSet.leftWheelCollider.brakeTorque = 0.0f;
             if (handbrake)
             {
-                wheelSet.rightWheelCollider.motorTorque = 0;
-                wheelSet.leftWheelCollider.motorTorque = 0;
-            }
-            else
-            {
-                wheelSet.rightWheelCollider.brakeTorque = 0;
-                wheelSet.leftWheelCollider.brakeTorque = 0;
+                wheelSet.rightWheelCollider.brakeTorque = maxBrake;
+                wheelSet.leftWheelCollider.brakeTorque = maxBrake;
             }
 
             Stabilize(wheelSet);
@@ -159,12 +184,13 @@ public class TruckController : MonoBehaviour {
             wheelSet.leftWheelCollider.attachedRigidbody.AddForceAtPosition(wheelSet.leftWheelCollider.transform.up * (antiRollForce * -1), wheelSet.leftWheelCollider.transform.position);
         }
     }
-    public void Adjust()
+
+    public float Adjust()
     {
         float magnitude = wheelSets[0].rightWheelCollider.attachedRigidbody.velocity.magnitude;
         //adds a downforce to truck to help it self right and stay down at high speed
         wheelSets[0].rightWheelCollider.attachedRigidbody.AddForce(-transform.up * maxDownForce * magnitude);
-        //Debug.Log(magnitude);
+        return magnitude;
     }
 
     //alligns the Wheel meshes with the position and rotation of the wheel colliders
@@ -193,22 +219,4 @@ public class TruckController : MonoBehaviour {
         }
         return wheels;
     }
-
-    public void AllignBoxColliders()
-    {
-        /*
-        Debug.Log(boxColliders.transform.position);
-        Vector3 frontAxle = Midpoint(wheelSets[0].rightWheel.transform.position, wheelSets[0].leftWheel.transform.position);
-        Vector3 backAxle = Midpoint(wheelSets[wheelSets.Count-1].rightWheel.transform.position, wheelSets[wheelSets.Count-1].leftWheel.transform.position);
-        Vector3 midpoint = Midpoint(frontAxle, backAxle);
-        boxColliders.transform.position = midpoint + new Vector3(0.0f, -0.8f, -0.1f);
-        Debug.Log(midpoint);
-        */
-    }
-
-    public Vector3 Midpoint(Vector3 pointOne, Vector3 pointTwo)
-    {
-        return new Vector3(((pointOne.x + pointTwo.x) / 2), ((pointOne.y + pointTwo.y) / 2), ((pointOne.z + pointTwo.z) / 2));
-    }
-
 }

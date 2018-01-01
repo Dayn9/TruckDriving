@@ -20,18 +20,10 @@ public class TruckUserController : MonoBehaviour {
             float horizontal = Input.GetAxis("Steer");
             float vertical = Input.GetAxis("RightTrigger") * -1;
             float brake = Input.GetAxis("LeftTrigger");
-            bool jump = Input.GetButton("Handbrake");
+            bool handbrake = Input.GetButton("Handbrake");
             bool nitro = Input.GetButton("Nitro");
-            truck.Move(horizontal, vertical, brake, jump, nitro);
-        }
-        else
-        {
-            float horizontal = Input.GetAxis("Horizontal");
-            float vertical = Input.GetAxis("Vertical");
-            bool jump = Input.GetButton("Jump");
-            bool nitro = Input.GetKey(KeyCode.X);
 
-            truck.Move(horizontal, vertical, vertical, jump, nitro);
+            truck.Move(horizontal, vertical, brake, handbrake, nitro);
         }
 	}
 }

@@ -5,14 +5,37 @@ using UnityEngine;
 public class EndlessRoad : MonoBehaviour {
 
     [SerializeField] private GameObject mainCamera;
+    //dimensions of road gameobject
     [SerializeField] private float width;
     [SerializeField] private float length;
+    [SerializeField] private float height;
+    //angles in degress the road turns or ramps
     [SerializeField] private float curveAngle;
-    [SerializeField] private GameObject road;
+    [SerializeField] private float rampAngle;
+    [SerializeField] private GameObject controller;
+    [SerializeField] private int branch;
 
+    public static List<RoadConfig> roadMap;
+    //index of branches is branch, value is count of that branch
+    public static List<int> branches = new List<int>();
+
+    
     private bool created = false;
 
-	void Update () {
+    private void Start()
+    {
+        if(roadMap == null) {
+            RoadManager manager = controller.GetComponent<RoadManager>();
+            manager.Sort();
+            roadMap = manager.roadMap;
+
+            //start initial branch
+            branches.Add(0);
+            branch = 0;
+        } 
+    }
+
+    void Update () {
         //only make a new road section if haven't already
         if (!created) {
             //check if within distance of camera render
@@ -21,46 +44,103 @@ public class EndlessRoad : MonoBehaviour {
                 + Mathf.Pow(transform.position.z - mainCamera.transform.position.z, 2)) 
                 < mainCamera.GetComponent<Camera>().farClipPlane)
             {
+                GameObject newRoad;
+                foreach (RoadConfig config in roadMap)
+                {
+                    //check if beggining of new road configuration
+                    if (branch == config.branch && branches[branch] == config.Begin )
+                    {
+                        //if so set the new curve and ramp angle based on the configuration of the road
+                        switch (config.roadType)
+                        {
+                            case RoadType.Straight:
+                                curveAngle = 0;
+                                rampAngle = 0;
+                                break;
+                            case RoadType.Curved:
+                                curveAngle = config.curveAngle;
+                                rampAngle = 0;
+                                break;
+                            case RoadType.Ramp:
+                                curveAngle = 0;
+                                rampAngle = config.rampAngle;
+                                break;
+                            case RoadType.Split:
+                                //contiue current path with same ramp or curve
+                                newRoad = Instantiate(gameObject);
+                                Position(newRoad);
+                                branches[branch]++;
+                                //create new branch
+                                curveAngle = config.curveAngle;
+                                branches.Add(0);
+                                branch = branches.Count - 1;
+                                break;
+                        }
+                    }
+                }
                 //create a copy of self with same position and rotation
-                GameObject newRoad = Instantiate(gameObject);
-                //move to anchor point, rotate and then move to final point
-                if (curveAngle > 0)
-                {
-                    //anchor point in upper left of origional road
-                    newRoad.transform.Translate(Vector3.forward * (length / 2) + Vector3.left * (width / 2));
-                    newRoad.transform.Rotate(Vector3.up, curveAngle);
-                    newRoad.transform.Translate(Vector3.forward * (length / 2) + Vector3.right * (width / 2));
-                }
-                else if (curveAngle < 0)
-                {
-                    //anchor point in upper right of origional road
-                    newRoad.transform.Translate(Vector3.forward * (length / 2) + Vector3.right * (width / 2));
-                    newRoad.transform.Rotate(Vector3.up, curveAngle);
-                    newRoad.transform.Translate(Vector3.forward * (length / 2) + Vector3.left * (width / 2));
-                }
-                else {
-                    //just move road to directly in front
-                    newRoad.transform.Translate(Vector3.forward * length);
-                }
+                newRoad = Instantiate(gameObject);
+                Position(newRoad);
+                branches[branch]++;
                 created = true;
             }
         }
 	}
-}
-/* ALOMOST WORKED
- * //create a new Road and rotate it curveAngle degrees
-                GameObject newRoad = new GameObject();
-                newRoad.transform.rotation = transform.rotation;
-                newRoad.transform.position = transform.position;
-                newRoad.transform.Rotate(Vector3.up, curveAngle);
+    
+    //length of each hill and magnitude of angle
+    private void Hill(float length, float magnitude)
+    {
+        rampAngle = branches[branch] % length < length / 4 || branches[branch] % length >= 3 * length / 4 ? -magnitude : magnitude;
+    }
 
-                if (curveAngle > 0) {
-                    float rotation = transform.rotation.y * 2;
-                    Vector3 orginTopLeft = new Vector3(transform.position.x - ((width / 2) * Mathf.Cos(rotation)) + ((length / 2) * Mathf.Sin(rotation)), transform.position.y, transform.position.z + ((width / 2) * Mathf.Sin(rotation)) + ((length / 2) * Mathf.Cos(rotation)));
-                    Debug.Log(orginTopLeft);
-                    rotation = newRoad.transform.rotation.y * 2;
-                    Vector3 newBottomLeft = new Vector3(newRoad.transform.position.x - ((width / 2) * Mathf.Cos(rotation)) - ((length / 2) * Mathf.Sin(rotation)), transform.position.y, newRoad.transform.position.z + ((width / 2) * Mathf.Sin(rotation)) - ((length / 2) * Mathf.Cos(rotation)));
-                    Debug.Log(newBottomLeft);
-                    newRoad.transform.position = transform.position + orginTopLeft - newBottomLeft;
-                }
-*/
+    //move and rotate to new position
+    private void Position(GameObject newRoad)
+    {
+        //move center of new Road to front of origional
+        newRoad.transform.Translate(Vector3.forward * (length / 2));
+        //Ramp up and down
+        newRoad.transform.Translate(Vector3.up * (height / 2) * Mathf.Sign(rampAngle));
+        newRoad.transform.Rotate(Vector3.right, rampAngle);
+        newRoad.transform.Translate(Vector3.down * (height / 2) * Mathf.Sign(rampAngle));
+        //Turn left and right
+        newRoad.transform.Translate(Vector3.left * (width / 2) * Mathf.Sign(curveAngle));
+        newRoad.transform.Rotate(Vector3.up, curveAngle);
+        newRoad.transform.Translate(Vector3.right * (width / 2) * Mathf.Sign(curveAngle));
+        //move into final position
+        newRoad.transform.Translate(Vector3.forward * (length / 2));
+    }
+}
+
+/* CASES FOR ROAD TYPES
+ case RoadType.Hill:
+                                curveAngle = 0;
+                                //set the ramp angle based on config
+                                Hill(config.length, config.rampAngle);
+                                Position(newRoad);
+                                //increase the branch count
+                                branches[branch]++;
+                                break;
+                            case RoadType.Split:
+                                //contiue current path with same ramp or curve
+                                Position(newRoad);
+                                branches[branch]++;
+                                //create new branch
+                                curveAngle = config.curveAngle;
+                                branches.Add(0);
+                                branch = branches.Count - 1;
+                                newRoad = Instantiate(gameObject);
+                                Position(newRoad);
+                                break;
+                            case RoadType.Curved:
+                                curveAngle = config.curveAngle;
+                                rampAngle = 0;
+                                Position(newRoad);
+                                branches[branch]++;
+                                break;
+                            case RoadType.Ramp:
+                                curveAngle = 0;
+                                rampAngle = config.rampAngle;
+                                Position(newRoad);
+                                branches[branch]++;
+                                break;
+ */

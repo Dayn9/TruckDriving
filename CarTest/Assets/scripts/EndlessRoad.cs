@@ -6,9 +6,9 @@ public class EndlessRoad : MonoBehaviour {
 
     [SerializeField] private GameObject mainCamera;
     //dimensions of road gameobject
-    [SerializeField] private float width;
-    [SerializeField] private float length;
-    [SerializeField] private float height;
+    private float width;
+    private float length;
+    private float height;
     //angles in degress the road turns or ramps
     [SerializeField] private float curveAngle;
     [SerializeField] private float rampAngle;
@@ -19,11 +19,14 @@ public class EndlessRoad : MonoBehaviour {
     //index of branches is branch, value is count of that branch
     public static List<int> branches = new List<int>();
 
-    
     private bool created = false;
 
     private void Start()
     {
+        width = transform.localScale.x;
+        length = transform.localScale.z;
+        height = transform.localScale.y;
+
         if(roadMap == null) {
             RoadManager manager = controller.GetComponent<RoadManager>();
             manager.Sort();
@@ -108,6 +111,9 @@ public class EndlessRoad : MonoBehaviour {
         newRoad.transform.Translate(Vector3.right * (width / 2) * Mathf.Sign(curveAngle));
         //move into final position
         newRoad.transform.Translate(Vector3.forward * (length / 2));
+
+        //rename based on position
+        newRoad.name = "Road_" + (int)transform.position.x + "_" + (int)transform.position.z;
     }
 }
 

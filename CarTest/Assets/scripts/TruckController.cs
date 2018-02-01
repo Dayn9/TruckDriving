@@ -21,7 +21,7 @@ public class TruckController : MonoBehaviour {
 
     //for locking the speed
     private float currentMagnitude;
-    private float setMagnitude = 0.0f;
+    //private float setMagnitude = 0.0f;
     private float setTorque;
 
     public void Start()
@@ -31,10 +31,11 @@ public class TruckController : MonoBehaviour {
         rb.centerOfMass = rb.centerOfMass + new Vector3(0.0f, -1.0f, 0.0f);
         currentSteerAngle = maxSteerAngle;
         currentMagnitude = 0.0f;
+
+        trailers = new List<GameObject>();
     }
 
     //Triggers
-    /*
     void OnTriggerEnter(Collider coll)
     {
         //Add trailers to back of truck
@@ -66,7 +67,24 @@ public class TruckController : MonoBehaviour {
         trailers.RemoveAt(trailers.Count-1);
         return trailers[trailers.Count - 1];
     }
-    */
+
+    //called when player falls off the map
+    public void BackToStart()
+    {
+        //remove all trailers except for first one
+        while (trailers.Count > 1)
+        {
+            RemoveTrailer();
+        }
+        //stop
+        rb.velocity = Vector3.zero;
+        //return to starting position
+        transform.rotation = new Quaternion(0f, 0f, 0f, 1.0f);
+        trailers[0].transform.rotation = new Quaternion(0f, 0f, 0f, 1.0f);
+        transform.position = Vector3.zero;
+        trailers[0].transform.position = Vector3.zero;
+    }
+
 
     public void Move(float horizontal, float acc, float brk, bool handbrake, bool nitro)
     {
@@ -143,6 +161,10 @@ public class TruckController : MonoBehaviour {
             Stabilize(wheelSet);
             // FIX rotates on wrong axis
             SetWheelMeshes(wheelSet);
+            if (transform.position.y < -10)
+            {
+                BackToStart();
+            }
         }
     }
 

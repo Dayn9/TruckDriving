@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class RoadManager : MonoBehaviour {
     [SerializeField] public List<RoadConfig> roadMap;
+
+    [HideInInspector] public float[] branches;
     
     //assigns begin and end values to Road Configurations
     public void Sort()
     {
         //holds current positions in branches
-        float[] branches = new float[NumBranches()];
+        branches = new float[NumBranches()];
         //loop through every configuration
         foreach(RoadConfig config in roadMap) {
             //make sure Hill length is a multiple of 4

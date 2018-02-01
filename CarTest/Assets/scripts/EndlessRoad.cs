@@ -20,6 +20,11 @@ public class EndlessRoad : MonoBehaviour {
     public static List<int> branches = new List<int>();
 
     private bool created = false;
+    private static RoadManager manager;
+    private float maxBranch;
+
+    [SerializeField] private GameObject pickupPrefab;
+
 
     private void Start()
     {
@@ -27,20 +32,29 @@ public class EndlessRoad : MonoBehaviour {
         length = transform.localScale.z;
         height = transform.localScale.y;
 
-        if(roadMap == null) {
-            RoadManager manager = controller.GetComponent<RoadManager>();
+        if (roadMap == null) {
+            manager = controller.GetComponent<RoadManager>();
             manager.Sort();
             roadMap = manager.roadMap;
 
             //start initial branch
             branches.Add(0);
             branch = 0;
-        } 
+        }
+
+        maxBranch = manager.branches[branch] - 1;
+
+        //every 10 road segments, create a trailer pickup with a random horizontal position 
+        if (branches[branch] % 10 == 0 && branches[branch] != 0)
+        {
+            Instantiate(pickupPrefab, transform.position + new Vector3(Random.Range((-width/2) + 2, (width/2) - 2), 0, 0), transform.rotation);
+        }
+
     }
 
     void Update () {
-        //only make a new road section if haven't already
-        if (!created) {
+        //only make a new road section if haven't already 
+        if (!created && branches[branch] < maxBranch) {
             //check if within distance of camera render
             if (Mathf.Sqrt(Mathf.Pow(transform.position.x - mainCamera.transform.position.x, 2) 
                 + Mathf.Pow(transform.position.y - mainCamera.transform.position.y, 2) 
@@ -85,11 +99,12 @@ public class EndlessRoad : MonoBehaviour {
                 newRoad = Instantiate(gameObject);
                 Position(newRoad);
                 branches[branch]++;
+
                 created = true;
             }
         }
 	}
-    
+
     //length of each hill and magnitude of angle
     private void Hill(float length, float magnitude)
     {
@@ -116,37 +131,3 @@ public class EndlessRoad : MonoBehaviour {
         newRoad.name = "Road_" + (int)transform.position.x + "_" + (int)transform.position.z;
     }
 }
-
-/* CASES FOR ROAD TYPES
- case RoadType.Hill:
-                                curveAngle = 0;
-                                //set the ramp angle based on config
-                                Hill(config.length, config.rampAngle);
-                                Position(newRoad);
-                                //increase the branch count
-                                branches[branch]++;
-                                break;
-                            case RoadType.Split:
-                                //contiue current path with same ramp or curve
-                                Position(newRoad);
-                                branches[branch]++;
-                                //create new branch
-                                curveAngle = config.curveAngle;
-                                branches.Add(0);
-                                branch = branches.Count - 1;
-                                newRoad = Instantiate(gameObject);
-                                Position(newRoad);
-                                break;
-                            case RoadType.Curved:
-                                curveAngle = config.curveAngle;
-                                rampAngle = 0;
-                                Position(newRoad);
-                                branches[branch]++;
-                                break;
-                            case RoadType.Ramp:
-                                curveAngle = 0;
-                                rampAngle = config.rampAngle;
-                                Position(newRoad);
-                                branches[branch]++;
-                                break;
- */

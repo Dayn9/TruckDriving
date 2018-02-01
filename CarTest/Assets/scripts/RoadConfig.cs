@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum RoadType { Straight, Curved, Ramp, Hill, Split }
+public enum RoadType { Straight, Curved, Ramp, Hill, Split, End}
 
 [System.Serializable]
 public class RoadConfig : System.Object {

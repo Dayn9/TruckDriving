@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class GenerateTerrain : MonoBehaviour {
 
-    [SerializeField] private int heightScale;
+    [SerializeField] private float heightScale;
     [SerializeField] private float detailScale;
 
 	// Use this for initialization
@@ -17,8 +17,10 @@ public class GenerateTerrain : MonoBehaviour {
         //loop through every vertex and raise it by a perlin noise function based on world position
         for (int v = 0; v < verticies.Length; v++)
         {
-            verticies[v].y = Mathf.PerlinNoise((verticies[v].x + this.transform.position.x) / detailScale,
-                                               (verticies[v].z + this.transform.position.z) / detailScale) * heightScale;
+            Debug.Log(Mathf.PerlinNoise((verticies[v].x * 10 + this.transform.position.x) / detailScale,
+                                               (verticies[v].z * 10 + this.transform.position.z) / detailScale));
+            verticies[v].y = Mathf.PerlinNoise((verticies[v].x*10 + this.transform.position.x) / detailScale,
+                                               (verticies[v].z*10 + this.transform.position.z) / detailScale) * heightScale;
         }
         mesh.vertices = verticies;
         mesh.RecalculateBounds();

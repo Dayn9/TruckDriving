@@ -18,6 +18,7 @@ public class CameraStable : MonoBehaviour {
 
         truckY = truck.transform.eulerAngles.y;
 
+        
         //pan camera left and right
         if(Mathf.Abs(Input.GetAxis("Mouse X")) > 0.1f) { scrollY += Input.GetAxis("Mouse X") * 3; }
         //if not panning, return to origional position

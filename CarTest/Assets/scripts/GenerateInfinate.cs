@@ -23,8 +23,8 @@ public class GenerateInfinate : MonoBehaviour {
     private int planeSize = 100;
 
     //number of planes generated away from player
-    private int halfTilesX = 5;
-    private int halfTilesZ = 5;
+    private int halfTilesX = 6;
+    private int halfTilesZ = 6;
 
     Vector3 startPos;
 

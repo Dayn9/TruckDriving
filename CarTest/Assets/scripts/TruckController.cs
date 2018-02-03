@@ -36,7 +36,7 @@ public class TruckController : MonoBehaviour {
     }
 
     //Triggers
-    void OnTriggerEnter(Collider coll)
+    public virtual void OnTriggerEnter(Collider coll)
     {
         //Add trailers to back of truck
         if (coll.tag == "TrailerPickup")
@@ -58,18 +58,21 @@ public class TruckController : MonoBehaviour {
                 newTrailer.GetComponent<HingeJoint>().connectedBody = trailers[trailers.Count - 1].GetComponent<Rigidbody>();
                 newTrailer.GetComponent<Rigidbody>().velocity = trailers[trailers.Count - 1].GetComponent<Rigidbody>().velocity;
             }
+            //give the trailer the same player number as the truck head
+            newTrailer.GetComponent<TruckUserController>().PlayerNum = gameObject.GetComponent<TruckUserController>().PlayerNum;
             trailers.Add(newTrailer);
         }
     } 
+
     //removes last trailer from back and sends it to dropOff
-    public GameObject RemoveTrailer()
+    public virtual GameObject RemoveTrailer()
     {
         trailers.RemoveAt(trailers.Count-1);
         return trailers[trailers.Count - 1];
     }
 
     //called when player falls off the map
-    public void BackToStart()
+    public virtual void BackToStart()
     {
         //remove all trailers except for first one
         while (trailers.Count > 1)
@@ -81,7 +84,7 @@ public class TruckController : MonoBehaviour {
         //return to starting position
         transform.rotation = new Quaternion(0f, 0f, 0f, 1.0f);
         trailers[0].transform.rotation = new Quaternion(0f, 0f, 0f, 1.0f);
-        transform.position = Vector3.zero;
+        transform.position = new Vector3(0,10,0);
         trailers[0].transform.position = Vector3.zero;
     }
 

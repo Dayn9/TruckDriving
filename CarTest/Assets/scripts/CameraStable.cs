@@ -8,19 +8,24 @@ public class CameraStable : MonoBehaviour {
 
     [SerializeField] GameObject truck;
     [SerializeField] GameObject cam;
+    private int PlayerNum;
     private float truckY;
     private float scrollY;
     private float scrollX;
     private CameraLocation location = CameraLocation.DriverView;
+
+    private void Awake()
+    {
+        PlayerNum = truck.GetComponent<TruckUserController>().PlayerNum;
+    }
 
     // Update is called once per frame
     void Update () {
 
         truckY = truck.transform.eulerAngles.y;
 
-        
         //pan camera left and right
-        if(Mathf.Abs(Input.GetAxis("Mouse X")) > 0.1f) { scrollY += Input.GetAxis("Mouse X") * 3; }
+        if(Mathf.Abs(Input.GetAxis("Mouse X" + PlayerNum)) > 0.1f) { scrollY += Input.GetAxis("Mouse X" + PlayerNum) * 3; }
         //if not panning, return to origional position
         else { scrollY = scrollY / 1.2f; }
         //remove asymptote as scrollY approaches 0
@@ -29,13 +34,13 @@ public class CameraStable : MonoBehaviour {
         if (Mathf.Abs(scrollY) > 180) { scrollY -= 360 * Mathf.Sign(scrollY); }
 
         //pan camera up and down
-        if (Mathf.Abs(Input.GetAxis("Mouse Y")) > 0.1f) { scrollX += Input.GetAxis("Mouse Y") *1.5f; }
+        if (Mathf.Abs(Input.GetAxis("Mouse Y" + PlayerNum)) > 0.1f) { scrollX += Input.GetAxis("Mouse Y" + PlayerNum) *1.5f; }
 
         //Debug.Log(cam.transform.localPosition);
         //Debug.Log(cam.transform.localRotation); 
 
         //camera views locations and rotations 
-        if (Input.GetButtonDown("LeftButton"))
+        if (Input.GetButtonDown("LeftButton" + PlayerNum))
         {
             switch (location) {
                 case CameraLocation.TopView:

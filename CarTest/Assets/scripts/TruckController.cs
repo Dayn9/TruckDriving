@@ -82,9 +82,9 @@ public class TruckController : MonoBehaviour {
         //stop
         rb.velocity = Vector3.zero;
         //return to starting position
-        transform.rotation = new Quaternion(0f, 0f, 0f, 1.0f);
-        trailers[0].transform.rotation = new Quaternion(0f, 0f, 0f, 1.0f);
-        transform.position = new Vector3(0,10,0);
+        transform.rotation = Quaternion.identity;
+        trailers[0].transform.rotation = Quaternion.identity;
+        transform.position = new Vector3(0,30,0);
         trailers[0].transform.position = Vector3.zero;
     }
 
@@ -117,9 +117,10 @@ public class TruckController : MonoBehaviour {
             {
                 //apply force evenly across all driveWheels
                 float thrustTorque = acceleration * (maxMotor / NumDriveWheels());
-                if (rb.velocity.magnitude < 0.1)
+                //add a lot of torque when going slowly
+                if(currentMagnitude < 10 && acceleration > 0)
                 {
-                    thrustTorque = maxMotor / NumDriveWheels();
+                    thrustTorque += maxMotor;
                 }
                 wheelSet.rightWheelCollider.motorTorque = thrustTorque;
                 wheelSet.leftWheelCollider.motorTorque = thrustTorque;

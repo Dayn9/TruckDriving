@@ -21,6 +21,5 @@ public class TruckUserController : MonoBehaviour {
         bool handbrake = Input.GetButton("Handbrake" + PlayerNum);
         bool nitro = Input.GetButton("Nitro" + PlayerNum);
         truck.Move(horizontal, vertical, brake, handbrake, nitro);
-
 	}
 }

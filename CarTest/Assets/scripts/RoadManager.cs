@@ -5,31 +5,20 @@ using UnityEngine;
 public class RoadManager : MonoBehaviour {
     [SerializeField] public List<RoadConfig> roadMap;
 
-    [HideInInspector] public float[] branches;
+    [HideInInspector] public float[] branches; 
 
     private List<RoadConfig> pickups ;
     
     //assigns begin and end values to Road Configurations
     public void Sort()
     {
-        pickups = new List<RoadConfig>();
         branches = new float[NumBranches()];
-        Debug.Log(branches.Length);
-        //loop through every configuration and assign values
-        foreach(RoadConfig config in roadMap)
-        {
-            if(config.roadType == RoadType.Pickup)
-            {
-                pickups.Add(config);
-                Debug.Log("PICKMEUP");
-            }
-        }
-
-        CreatePickups(pickups);
+        
+        //add pickup locations to Road Map
+        CreatePickups();
 
         branches = new float[NumBranches()];
-        Debug.Log(branches.Length);
-
+        //loop through every configuration and assign values to special cases
         foreach (RoadConfig config in roadMap) {
             
             switch(config.roadType){
@@ -50,12 +39,23 @@ public class RoadManager : MonoBehaviour {
     }
 
     //adds a series of road configurations to the road map that create a pickup location
-    public void CreatePickups(List<RoadConfig> pickups)
+    public void CreatePickups()
     {
-        foreach(RoadConfig config in pickups)
+        pickups = new List<RoadConfig>();
+        //finds all the pickup placeholder roads and addsthem to seperate list
+        foreach (RoadConfig config in roadMap)
+        {
+            if (config.roadType == RoadType.Pickup)
+            {
+                pickups.Add(config);                        
+            }
+        }
+        //adds in the road sections to the roadmap
+        foreach (RoadConfig config in pickups)
         {
             // slplit off road and make sure path is straight until they meet back up... 
-            int index = roadMap.IndexOf(config) - 1;
+            int index = roadMap.IndexOf(config);
+            roadMap.Insert(index++, new RoadConfig(RoadType.Straight, config.branch, 0, 0, 1)); //resets the straight direction
             roadMap.Insert(index++, new RoadConfig(RoadType.Split, config.branch, config.curveAngle, 0, 1));
             roadMap.Insert(index++, new RoadConfig(RoadType.Straight, config.branch, 0, 0, 15));
             //...and then creates the road that splits off and comes back
@@ -63,16 +63,16 @@ public class RoadManager : MonoBehaviour {
             roadMap.Insert(index++, new RoadConfig(RoadType.Curved, newBranch, config.curveAngle, 0, 2));
             roadMap.Insert(index++, new RoadConfig(RoadType.Straight, newBranch, 0, 0, 3));
             roadMap.Insert(index++, new RoadConfig(RoadType.Curved, newBranch, -1 * config.curveAngle, 0, 2));
-            roadMap.Insert(index++, new RoadConfig(RoadType.Straight, newBranch, 0, 0, 5));
-            roadMap.Insert(index++, new RoadConfig(RoadType.Curved, newBranch, -1 * config.curveAngle, 0, 2));
+            roadMap.Insert(index++, new RoadConfig(RoadType.Straight, newBranch, 0, 0, 5)); 
+            roadMap.Insert(index++, new RoadConfig(RoadType.Curved, newBranch, -1 * config.curveAngle, 0, 2, true)); //Power up right after straight section
             roadMap.Insert(index++, new RoadConfig(RoadType.Straight, newBranch, 0, 0, 3));
             roadMap.Insert(index++, new RoadConfig(RoadType.Curved, newBranch, config.curveAngle, 0, 2));
             //remove the pickup location placeholder
-            roadMap.Remove(config);
-            
+            roadMap.Remove(config);   
         }
     }
 
+    //finds the number of branches in the Road Map
     public int NumBranches() {
         int max = 0;
         foreach(RoadConfig config in roadMap)

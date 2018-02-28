@@ -1,29 +1,31 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EndlessRoad : MonoBehaviour {
 
-    [SerializeField] private GameObject mainCamera;
-    //dimensions of road gameobject
-    private float width;
+    [SerializeField] private GameObject mainCamera; //reference to player camera
+
+    private float width; //dimensions of road gameobject
     private float length;
     private float height;
-    //angles in degress the road turns or ramps
-    [SerializeField] private float curveAngle;
+    
+    [SerializeField] private float curveAngle; //angles in degress the road turns or ramps
     [SerializeField] private float rampAngle;
-    [SerializeField] private GameObject controller;
-    [SerializeField] private int branch;
+    
+    [SerializeField] private int branch; //what branch of the road the segment is part of
+    private float maxBranch; //total length of the branch road segment is part of
+    public static List<int> branches = new List<int>(); //index of branches is branch, value is count of that branch
+    public static List<RoadConfig> roadMap; //List of all the road branches and sections
+    
+    private bool created = false; //insures that road is only created once
+    [SerializeField] private GameObject controller; //reference to the Game Controller
+    private static RoadManager manager; //reference to RoadManager Script in Game Controller
 
-    public static List<RoadConfig> roadMap;
-    //index of branches is branch, value is count of that branch
-    public static List<int> branches = new List<int>();
-
-    private bool created = false;
-    private static RoadManager manager;
-    private float maxBranch;
-
-    [SerializeField] private GameObject pickupPrefab;
+    [SerializeField] private GameObject pickupPrefab; //reference to the pickup Powerup Prefab
+    [SerializeField] private GameObject sfPrefab; //reference to the start/finish line Prefab
+    [SerializeField] private Text UItext;
 
 
     private void Start()
@@ -41,14 +43,10 @@ public class EndlessRoad : MonoBehaviour {
             branches.Add(0);
             branch = 0;
         }
-
         maxBranch = manager.branches[branch] - 1;
 
         //every 10 road segments, create a trailer pickup with a random horizontal position 
-        if (branches[branch] % 10 == 0 && branches[branch] != 0)
-        {
-            Instantiate(pickupPrefab, transform.position + new Vector3(Random.Range((-width/2) + 2, (width/2) - 2), 0, 0), transform.rotation);
-        }
+        //if (branches[branch] % 10 == 0 && branches[branch] != 0)
 
     }
 
@@ -62,6 +60,8 @@ public class EndlessRoad : MonoBehaviour {
                 < mainCamera.GetComponent<Camera>().farClipPlane)
             {
                 GameObject newRoad;
+
+                //loop through list of all road sections
                 foreach (RoadConfig config in roadMap)
                 {
                     //check if beggining of new road configuration
@@ -93,13 +93,30 @@ public class EndlessRoad : MonoBehaviour {
                                 branch = branches.Count - 1;
                                 break;
                         }
+
+                        //create the powerups
+                        if (config.PowerUp)
+                        {
+                            Instantiate(pickupPrefab, transform.position - (width/4 * transform.right), transform.rotation);
+                            Instantiate(pickupPrefab, transform.position, transform.rotation);
+                            Instantiate(pickupPrefab, transform.position + (width / 4 * transform.right), transform.rotation);
+                        }
+                        
                     }
                 }
                 //create a copy of self with same position and rotation
                 newRoad = Instantiate(gameObject);
                 Position(newRoad);
-                branches[branch]++;
 
+                if(branch == 0 && ( branches[branch] == 2 || branches[branch] == maxBranch - 2))
+                {
+                    GameObject line = sfPrefab;
+                    line.GetComponent<FinishLine>().lapCounter = UItext;
+                    Instantiate(line, transform.position, transform.rotation);
+                }
+
+                //increase the count of the branch by 1
+                branches[branch]++;
                 created = true;
             }
         }
@@ -127,7 +144,7 @@ public class EndlessRoad : MonoBehaviour {
         //move into final position
         newRoad.transform.Translate(Vector3.forward * (length / 2));
 
-        //rename based on position
-        newRoad.name = "Road_" + (int)transform.position.x + "_" + (int)transform.position.z;
+        //rename based on position in x,z plane
+        newRoad.name = "Road(" + (int)transform.position.x + ", " + (int)transform.position.z+")";
     }
 }

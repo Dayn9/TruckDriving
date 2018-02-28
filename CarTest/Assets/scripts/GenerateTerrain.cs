@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//Script from Holistic3D: https://www.youtube.com/watch?v=dycHQFEz8VI
+//Temporary script from Holistic3D: https://www.youtube.com/watch?v=dycHQFEz8VI
 
 public class GenerateTerrain : MonoBehaviour {
 

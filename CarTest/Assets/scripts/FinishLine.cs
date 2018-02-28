@@ -5,21 +5,16 @@ using UnityEngine.UI;
 
 public class FinishLine : MonoBehaviour {
 
-    [SerializeField] private Text lapCounter;
+    public Text lapCounter;
 	
     private int Lap = 0;
-
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
     void OnTriggerEnter(Collider coll)
     {
         if (coll.CompareTag("TruckHead"))
         {
             Lap++;
-            lapCounter.text = "Lap: " + Lap;
-        }   
+            lapCounter.text = "";
+        }  
     }
 }

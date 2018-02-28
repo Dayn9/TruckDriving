@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Temporary script from Holistic3D: https://www.youtube.com/watch?v=dycHQFEz8VI
+
 class Tile
 {
     public GameObject theTile;

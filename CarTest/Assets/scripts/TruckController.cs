@@ -216,6 +216,8 @@ public class TruckController : MonoBehaviour {
         float magnitude = wheelSets[0].rightWheelCollider.attachedRigidbody.velocity.magnitude;
         //adds a downforce to truck to help it self right and stay down at high speed
         wheelSets[0].rightWheelCollider.attachedRigidbody.AddForce(-transform.up * maxDownForce * magnitude);
+        //increase the down force
+        wheelSets[0].rightWheelCollider.attachedRigidbody.AddForce(Vector3.down * maxDownForce * magnitude);
         return magnitude;
     }
 
